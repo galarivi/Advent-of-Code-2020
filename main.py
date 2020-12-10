@@ -443,8 +443,6 @@ def Day9_EncodingError_2():
             print(debug_str)
             debug_str = 'Sum Start: '
 
-
-
     max = -1
     min = invalid_num + 1
 
@@ -460,9 +458,57 @@ def Day9_EncodingError_2():
     return max + min
 
 
+def Day10_AdapterArray():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day10_Input.txt"
+    file = open(filepath, 'r')
+    jolts_list_str = file.readlines()
+
+    # 0 for outlet start voltage
+    jolts_list =[0]
+    for jlt_str in jolts_list_str:
+        jlt = int(jlt_str.rstrip())
+        jolts_list.append(jlt)
+
+    # Add adapter voltage
+    jolts_list.append(max(jolts_list) + 3)
+    jolts_list.sort()
+
+    diff_array = [0, 0, 0]
+    jlt_sum = 0
+
+    for i in range(1, len(jolts_list)):
+        front_jlt = jolts_list[i]
+        back_jlt = jolts_list[i - 1]
+        diff = int(front_jlt - back_jlt - 1)
+        jlt_sum += diff+1
+
+        diff_array[diff] += 1
+
+    return diff_array, jlt_sum, diff_array[0]*diff_array[2]
+
+
+def Day10_AdapterArray_2():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day10_Input.txt"
+    file = open(filepath, 'r')
+    jolts_list_str = file.readlines()
+
+    # 0 for outlet start voltage
+    jolts_list = [0]
+    for jlt_str in jolts_list_str:
+        jlt = int(jlt_str.rstrip())
+        jolts_list.append(jlt)
+
+    # Add adapter voltage
+    jolts_list.append(max(jolts_list) + 3)
+    jolts_list.sort()
+
+    adapter_tree = santasLilHelper.build_adapter_tree(jolts_list)
+
+    return santasLilHelper.calculate_tree_branch_count(adapter_tree, jolts_list)
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    if(True):
+    if(False):
         print('Day 1 Part 1: ' + str(Day1_ReportRepair(2020)))
         print('Day 1 Part 2: ' + str(Day1_ReportRepair_2(2020)))
         print('Day 2 Part 1: ' + str(Day2_PasswordRepair()))
@@ -481,4 +527,6 @@ if __name__ == '__main__':
         print('Day 8 Part 2: ' + str(Day8_GameRepair_2()))
         print('Day 9 Part 1: ' + str(Day9_EncodingError()))
         print('Day 9 Part 2: ' + str(Day9_EncodingError_2()))
+        print('Day 10 Part 1: ' + str(Day10_AdapterArray()))
 
+    print('Day 10 Part 2: ' + str(Day10_AdapterArray_2()))

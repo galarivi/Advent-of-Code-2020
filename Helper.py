@@ -289,5 +289,49 @@ def run_instruction(index, acc_val, game_instructions):
     elif game_instructions[index][0] == 'jmp':
         new_index += game_instructions[index][1]
 
-
     return new_index, new_acc_val
+
+
+#Day 10 Helper
+def build_adapter_tree(jolts_list):
+    adapter_tree = {}
+
+    for i in range(0, len(jolts_list)-1):
+        cur_adap_jlt = jolts_list[i]
+
+        tail_nodes = []
+
+        for j in range(i + 1, min(i+4, len(jolts_list))):
+            test_adap_jlt = jolts_list[j]
+            diff = test_adap_jlt - cur_adap_jlt
+
+            #print('   ' + str(test_adap_jlt) + ' - ' + str(cur_adap_jlt) + ' = ' + str(diff))
+            if diff <= 3:
+                tail_nodes.append(test_adap_jlt)
+
+        adapter_tree[str(cur_adap_jlt)] = tail_nodes
+
+    # Now we have a dictionary with each kv pair consisting of the jolt voltage and all adapters that can plug into i
+    return adapter_tree
+
+
+def calculate_tree_branch_count(adapter_tree, jolts_list):
+    final_jlt = str(max(jolts_list))
+
+    adapter_branch_count = {final_jlt: 1}
+
+    for i in range(len(jolts_list) - 2, -1, -1):
+        cur_jlt = str(jolts_list[i])
+
+        cur_cumulative_branch_count = 0
+
+        for branch in adapter_tree[cur_jlt]:
+            cur_cumulative_branch_count += adapter_branch_count[str(branch)]
+
+        adapter_branch_count[cur_jlt] = cur_cumulative_branch_count
+
+    # Now adapter_branch_count contains adapters with their cumulative branch count up to that point.
+    # Total branches should just be the sum of the first node's branch counts
+
+    return adapter_branch_count['0']
+
