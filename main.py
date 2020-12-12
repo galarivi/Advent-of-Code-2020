@@ -1,5 +1,5 @@
 import Helper as santasLilHelper
-
+import math
 
 def Day1_ReportRepair(target):
     filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day1_Input.txt"
@@ -506,6 +506,102 @@ def Day10_AdapterArray_2():
 
     return santasLilHelper.calculate_tree_branch_count(adapter_tree, jolts_list)
 
+
+def Day11_SeatingSystem():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day11_Input.txt"
+    file = open(filepath, 'r')
+    raw_seat_map = file.readlines()
+    seat_map = []
+
+    for row in raw_seat_map:
+        seat_map.append(row.strip())
+
+    prev_seat_map = seat_map
+    duplicate_found = False
+
+    while not duplicate_found:
+        seat_map = santasLilHelper.get_next_seat_state(seat_map)
+
+        if seat_map == prev_seat_map:
+            duplicate_found = True
+
+        prev_seat_map = seat_map
+
+    occ_count = 0
+    for row in seat_map:
+        for seat in row:
+            if seat == '#':
+                occ_count += 1
+
+    #print(seat_map)
+
+    return occ_count
+
+
+def Day11_SeatingSystem_2():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day11_Input.txt"
+    file = open(filepath, 'r')
+    raw_seat_map = file.readlines()
+    seat_map = []
+
+    for row in raw_seat_map:
+        seat_map.append(row.strip())
+
+    prev_seat_map = seat_map
+    duplicate_found = False
+
+    while not duplicate_found:
+        seat_map = santasLilHelper.get_next_seat_state_2(seat_map)
+
+        if seat_map == prev_seat_map:
+            duplicate_found = True
+
+        prev_seat_map = seat_map
+
+    occ_count = 0
+    for row in seat_map:
+        for seat in row:
+            if seat == '#':
+                occ_count += 1
+
+    #print(seat_map)
+
+    return occ_count
+
+
+def Day12_RainRisk():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day12_Input.txt"
+    file = open(filepath, 'r')
+    instruction_list = file.readlines
+
+    # E, N, rotation (CCW +ve)
+    ship_state = [0, 0, 0]
+
+    for instruction in instruction_list:
+        instr = str(instruction[0])
+        val = int(instruction[1:])
+        ship_state = santasLilHelper.move_ship(ship_state, instr, val)
+
+    return ship_state, math.fabs(ship_state[0]) + math.fabs(ship_state[1])
+
+
+def Day12_RainRisk_2():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day12_Input.txt"
+    file = open(filepath, 'r')
+    instruction_list = file.readlines()
+
+    # E +ve, N +ve
+    ship_state = [0, 0]
+    waypoint_state = [10, 1]
+
+    for instruction in instruction_list:
+        instr = str(instruction[0])
+        val = int(instruction[1:])
+        ship_state = santasLilHelper.move_ship_2(ship_state, waypoint_state, instr, val)
+
+    return ship_state, waypoint_state, math.fabs(ship_state[0]) + math.fabs(ship_state[1])
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     if(False):
@@ -528,5 +624,9 @@ if __name__ == '__main__':
         print('Day 9 Part 1: ' + str(Day9_EncodingError()))
         print('Day 9 Part 2: ' + str(Day9_EncodingError_2()))
         print('Day 10 Part 1: ' + str(Day10_AdapterArray()))
+        print('Day 10 Part 2: ' + str(Day10_AdapterArray_2()))
+        print('Day 11 Part 1: ' + str(Day11_SeatingSystem()))
+        print('Day 11 Part 2: ' + str(Day11_SeatingSystem_2()))
+        print('Day 12 Part 1: ' + str(Day12_RainRisk()))
 
-    print('Day 10 Part 2: ' + str(Day10_AdapterArray_2()))
+    print('Day 12 Part 2: ' + str(Day12_RainRisk_2()))

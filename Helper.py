@@ -1,3 +1,4 @@
+import math
 
 #Day 3 Helper
 def tobaggan_path_calc(terrainMap, slopex, slopey):
@@ -311,7 +312,7 @@ def build_adapter_tree(jolts_list):
 
         adapter_tree[str(cur_adap_jlt)] = tail_nodes
 
-    # Now we have a dictionary with each kv pair consisting of the jolt voltage and all adapters that can plug into i
+    # Now we have a dictionary with each kv pair consisting of the jolt voltage and all adapters that can plug into it
     return adapter_tree
 
 
@@ -330,8 +331,153 @@ def calculate_tree_branch_count(adapter_tree, jolts_list):
 
         adapter_branch_count[cur_jlt] = cur_cumulative_branch_count
 
-    # Now adapter_branch_count contains adapters with their cumulative branch count up to that point.
+    # Now adapter_branch_count contains adapters with their cumulative branch count up to that point from the leaf level.
     # Total branches should just be the sum of the first node's branch counts
 
     return adapter_branch_count['0']
 
+
+#Day 11 Helper
+def get_next_seat_state(seat_map):
+    new_seat_map = []
+    for row in seat_map:
+        new_seat_map.append(row)
+
+    row_max = len(seat_map)
+    col_max = len(seat_map[0])
+
+    for i in range(0, row_max):
+        for j in range(0, col_max):
+            #print('Start: ('+str(i) + ', ' + str(j) + ')')
+            cur_seat = seat_map[i][j]
+            if cur_seat != '.':
+                row_check_range = range(max(0, i-1), min(i+2, row_max))
+                col_check_range = range(max(0, j-1), min(j+2, col_max))
+
+                adjacent_occ_count = 0
+                for x in row_check_range:
+                    for y in col_check_range:
+                        check_seat = seat_map[x][y]
+                        #print('From (' + str(i) + ', ' + str(j) + ') to (' + str(x) + ', ' + str(y) + ') : ' + check_seat)
+                        if not (x == i and y == j) and seat_map[x][y] == '#':
+                            adjacent_occ_count += 1
+
+                if cur_seat == 'L' and adjacent_occ_count == 0:
+                    new_seat_map[i] = new_seat_map[i][0:j] + '#' + new_seat_map[i][j+1:]
+                elif cur_seat == '#' and adjacent_occ_count >= 4:
+                    new_seat_map[i] = new_seat_map[i][0:j] + 'L' + new_seat_map[i][j+1:]
+
+    return new_seat_map
+
+
+def get_next_seat_state_2(seat_map):
+    new_seat_map = []
+    for row in seat_map:
+        new_seat_map.append(row)
+
+    row_max = len(seat_map)
+    col_max = len(seat_map[0])
+
+    for i in range(0, row_max):
+        for j in range(0, col_max):
+            #print('Start: ('+str(i) + ', ' + str(j) + ')')
+            cur_seat = seat_map[i][j]
+            if cur_seat != '.':
+
+                search_count = search_seat(i, j, -1, -1, seat_map) \
+                                + search_seat(i, j, -1, 0, seat_map) \
+                                + search_seat(i, j, -1, 1, seat_map) \
+                                + search_seat(i, j, 0, -1, seat_map) \
+                                + search_seat(i, j, 0, 1, seat_map) \
+                                + search_seat(i, j, 1, -1, seat_map) \
+                                + search_seat(i, j, 1, 0, seat_map) \
+                                + search_seat(i, j, 1, 1, seat_map)
+
+                if cur_seat == 'L' and search_count == 0:
+                    new_seat_map[i] = new_seat_map[i][0:j] + '#' + new_seat_map[i][j+1:]
+                elif cur_seat == '#' and search_count >= 5:
+                    new_seat_map[i] = new_seat_map[i][0:j] + 'L' + new_seat_map[i][j+1:]
+
+    return new_seat_map
+
+
+def search_seat(x,y, dx, dy, seat_map):
+    x += dx
+    y += dy
+
+    while(x >= 0 and x < len(seat_map) and y >= 0 and y < len(seat_map[0])):
+        if seat_map[x][y] == '#':
+            return 1
+        if seat_map[x][y] == 'L':
+            return 0
+
+        x += dx
+        y += dy
+
+    return 0
+
+
+#Day 12 Helper
+def move_ship(ship_state, instruction, val):
+
+    #print(ship_state)
+    #print('   ' + instruction + str(val))
+    sign = 1
+
+    if instruction == 'S' or instruction == 'W' or instruction == 'R':
+        sign = -1
+
+    if instruction == 'E' or instruction == 'W':
+        ship_state[0] = ship_state[0] + val*sign
+
+    elif instruction == 'N' or instruction == 'S':
+        ship_state[1] = ship_state[1] + val*sign
+
+    elif instruction == 'L' or instruction == 'R':
+        ship_state[2] = (ship_state[2] + val*sign) % 360
+
+    elif instruction == 'F':
+        angle = math.radians(ship_state[2])
+        ship_state[0] = round(ship_state[0] + val*math.cos(angle))
+        ship_state[1] = round(ship_state[1] + val*math.sin(angle))
+
+    return ship_state
+
+
+def move_ship_2(ship_state, waypoint_state, instruction, val):
+
+    print(ship_state)
+    print(waypoint_state)
+    print('   ' + instruction + str(val))
+    sign = 1
+
+    if instruction == 'S' or instruction == 'W' or instruction == 'R':
+        sign = -1
+
+    if instruction == 'E' or instruction == 'W':
+        waypoint_state[0] = waypoint_state[0] + val*sign
+
+    elif instruction == 'N' or instruction == 'S':
+        waypoint_state[1] = waypoint_state[1] + val*sign
+
+    elif instruction == 'L' or instruction == 'R':
+        diff = [waypoint_state[0] - ship_state[0], waypoint_state[1] - ship_state[1]]
+
+        r = math.sqrt(diff[0]*diff[0] + diff[1]*diff[1])
+        cur_angle = math.atan2(diff[1], diff[0])
+        new_angle = cur_angle + math.radians(val*sign)
+
+        waypoint_state[0] = ship_state[0] + r*math.cos(new_angle)
+        waypoint_state[1] = ship_state[1] + r * math.sin(new_angle)
+
+    elif instruction == 'F':
+        diff = [waypoint_state[0] - ship_state[0], waypoint_state[1] - ship_state[1]]
+
+        for i in range(0, val):
+            ship_state[0] += diff[0]
+            ship_state[1] += diff[1]
+
+        waypoint_state[0] = ship_state[0] + diff[0]
+        waypoint_state[1] = ship_state[1] + diff[1]
+
+    return ship_state
