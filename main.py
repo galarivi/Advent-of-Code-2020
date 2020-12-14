@@ -602,6 +602,114 @@ def Day12_RainRisk_2():
     return ship_state, waypoint_state, math.fabs(ship_state[0]) + math.fabs(ship_state[1])
 
 
+def Day13_ShuttleSearch():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day13_Input.txt"
+    file = open(filepath, 'r')
+    bus_schedule = file.readlines()
+
+    depart_time = int(bus_schedule[0])
+    in_service_list_raw = bus_schedule[1].strip().split(',')
+    in_service_list = []
+
+    for id in in_service_list_raw:
+        if id != 'x':
+            in_service_list.append(int(id))
+
+
+    closest_times = {}
+
+    for id in in_service_list:
+        closest_mins = id
+        while(closest_mins < depart_time):
+            closest_mins += id
+
+        closest_times[id] = closest_mins
+
+    best_time = [-1, 2*depart_time]
+    for id in closest_times.keys():
+        if closest_times[id] < best_time[1]:
+            best_time = [id, closest_times[id]]
+
+    return best_time[0]*(best_time[1]-depart_time)
+
+
+def Day13_ShuttleSearch_2():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day13_Input.txt"
+    file = open(filepath, 'r')
+    bus_schedule = file.readlines()
+
+    in_service_list = bus_schedule[1].strip().split(',')
+
+    for i in range(0, len(in_service_list)):
+        if in_service_list[i] != 'x':
+            in_service_list[i] = int(in_service_list[i])
+
+    lcd_index = 1
+    lcd = 1
+    t = 0
+    found = False
+
+    while not found:
+        t += lcd
+
+        xcount = 0
+        for i in range(0, len(in_service_list)):
+            if in_service_list[i] != 'x':
+                if santasLilHelper.is_multiple(int(t + i), int(in_service_list[i])):
+
+                    lcd = lcd * int(in_service_list[i])
+                    in_service_list[i] = 'x'
+                    lcd_index += 1
+            else:
+                xcount += 1
+
+        if xcount == len(in_service_list):
+            return t - lcd
+
+    return t
+
+
+def Day14_DockingData():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day14_Input.txt"
+    file = open(filepath, 'r')
+    instr_list_batch = file.readlines()
+
+    instr_list = santasLilHelper.parse_mem_instructions(instr_list_batch)
+
+    mem = {}
+    mask = ''
+
+    for i in range(0, len(instr_list)):
+        mem, mask = santasLilHelper.parse_instr(instr_list[i], mem, mask)
+
+    sum = 0
+    for addr, val in mem.items():
+        sum += val
+
+
+    return sum
+
+
+def Day14_DockingData_2():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day14_Input.txt"
+    file = open(filepath, 'r')
+    instr_list_batch = file.readlines()
+
+    instr_list = santasLilHelper.parse_mem_instructions(instr_list_batch)
+
+    mem = {}
+    mask = ''
+
+    for i in range(0, len(instr_list)):
+        mem, mask = santasLilHelper.parse_instr_2(instr_list[i], mem, mask)
+
+    sum = 0
+    for addr, val in mem.items():
+        sum += val
+
+
+    return sum
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     if(False):
@@ -628,5 +736,9 @@ if __name__ == '__main__':
         print('Day 11 Part 1: ' + str(Day11_SeatingSystem()))
         print('Day 11 Part 2: ' + str(Day11_SeatingSystem_2()))
         print('Day 12 Part 1: ' + str(Day12_RainRisk()))
+        print('Day 12 Part 2: ' + str(Day12_RainRisk_2()))
+        print('Day 13 Part 1: ' + str(Day13_ShuttleSearch()))
+        print('Day 13 Part 2: ' + str(Day13_ShuttleSearch_2()))
+        print('Day 14 Part 1: ' + str(Day14_DockingData()))
 
-    print('Day 12 Part 2: ' + str(Day12_RainRisk_2()))
+    print('Day 14 Part 12: ' + str(Day14_DockingData_2()))

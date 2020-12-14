@@ -445,10 +445,6 @@ def move_ship(ship_state, instruction, val):
 
 
 def move_ship_2(ship_state, waypoint_state, instruction, val):
-
-    print(ship_state)
-    print(waypoint_state)
-    print('   ' + instruction + str(val))
     sign = 1
 
     if instruction == 'S' or instruction == 'W' or instruction == 'R':
@@ -481,3 +477,125 @@ def move_ship_2(ship_state, waypoint_state, instruction, val):
         waypoint_state[1] = ship_state[1] + diff[1]
 
     return ship_state
+
+
+#Day 13 Helper
+def is_multiple(a, b):
+    #Is a multiple of b?
+
+    return a % b == 0
+
+
+#Day 14 Helper
+def parse_mem_instructions(instr_list_batch):
+    instr_list = []
+
+    for i in range(0, len(instr_list_batch)):
+        tokens = instr_list_batch[i].strip().split('=')
+
+        instr = ''
+        val = ''
+
+        if tokens[0][:3] == 'mas':
+            instr = 'mask'
+            val = str(tokens[1].strip(' '))
+        elif tokens[0][:3] == 'mem':
+            instr = 'mem'
+
+            addr = int(tokens[0][4:len(tokens[0])-2])
+            val = [addr, int(tokens[1])]
+
+        instr_dict = {instr: val}
+
+        instr_list.append(instr_dict)
+
+    return instr_list
+
+
+def parse_instr(instr_full, mem, mask):
+    [(instr, v)] = instr_full.items()
+
+    if instr == 'mask':
+        mask = instr_full['mask']
+    elif instr == 'mem':
+        addr = instr_full['mem'][0]
+        val = instr_full['mem'][1]
+
+        mem[addr] = apply_mask(mask, val)
+
+    #print(mem)
+    return mem, mask
+
+
+def parse_instr_2(instr_full, mem, mask):
+    [(instr, v)] = instr_full.items()
+
+    if instr == 'mask':
+        mask = instr_full['mask']
+    elif instr == 'mem':
+        addr = instr_full['mem'][0]
+        val = int(instr_full['mem'][1])
+
+        addr_masked = apply_mask_2(mask, addr)
+        num_X = addr_masked.count('X')
+
+        mem_list = [0] * int(math.pow(2, num_X))
+
+        for i in range(0, len(mem_list)):
+            cur_bin_combo = format(i, '0' + str(num_X) + 'b')
+            mem_list[i] = replace_X_with_bin(addr_masked, cur_bin_combo)
+
+        for addr in mem_list:
+            mem[addr] = val
+
+    #print(mem)
+    return mem, mask
+
+
+def apply_mask(mask, val):
+    mask_bin = '0b'
+    val_bin = format(val, '#038b')
+
+    for i in range(0, len(mask)):
+        if mask[i] == 'X':
+            mask_bin += '0'
+        elif mask[i] == '0':
+            mask_bin += str(val_bin[i+2])
+        elif mask[i] == '1':
+            if(val_bin[i+2] == '0'):
+                mask_bin += '1'
+            else:
+                mask_bin += '0'
+
+    mask_int = int(mask_bin, 2)
+    val_int = int(val_bin, 2)
+
+    return mask_int ^ val_int
+
+
+def apply_mask_2(mask, val):
+    val_bin = format(val, '036b')
+    final_val_str = ''
+
+    for i in range(0, len(mask)):
+        if mask[i] == 'X':
+            final_val_str += 'X'
+        elif mask[i] == '1':
+            final_val_str += '1'
+        elif mask[i] == '0':
+            final_val_str += str(val_bin[i])
+
+    #print(mask, val, val_bin, final_val_str)
+    return final_val_str
+
+
+def replace_X_with_bin(addr_masked, bin_combo):
+    X_id = 0
+    new_addr = addr_masked
+
+    for i in range(0, len(addr_masked)):
+        if addr_masked[i] == 'X':
+            new_addr = new_addr[:i] + str(bin_combo[X_id]) + addr_masked[i+1:]
+            X_id += 1
+
+    return int(new_addr, 2)
