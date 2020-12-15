@@ -741,4 +741,4 @@ if __name__ == '__main__':
         print('Day 13 Part 2: ' + str(Day13_ShuttleSearch_2()))
         print('Day 14 Part 1: ' + str(Day14_DockingData()))
 
-    print('Day 14 Part 12: ' + str(Day14_DockingData_2()))
+    print('Day 14 Part 2: ' + str(Day14_DockingData_2()))
