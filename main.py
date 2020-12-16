@@ -707,8 +707,175 @@ def Day14_DockingData_2():
     for addr, val in mem.items():
         sum += val
 
-
     return sum
+
+
+def Day15_RambunctiousRecitation(idx):
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day15_Input.txt"
+    file = open(filepath, 'r')
+    nums_raw = file.readlines()
+
+    nums_raw = nums_raw[0].strip().split(',')
+    nums = []
+
+
+    for i in range(0, len(nums_raw)):
+        nums.append(int(nums_raw[i]))
+
+    number_occur_dict = {}
+
+    for i in range(0, len(nums) - 1):
+        number_occur_dict[str(nums[i])] = i
+
+    i = len(nums)
+    prev_pair = [str(nums[i-1]), i-1 , 0]
+
+    while i < idx: # or  for part 2
+
+        if prev_pair[0] not in number_occur_dict.keys():
+            #print('Number: ' + str(nums[i-1])  + ' never occured before. Appending 0 at index ' + str(i))
+            prev_pair[2] = '0'
+        else:
+            prev_idx = number_occur_dict[prev_pair[0]]
+            prev_pair[2] = str(prev_pair[1] - prev_idx)
+            #nums.append(i - 1 - prev_idx)
+
+            #print('Number: ' + str(nums[i - 1]) + ' has occured before at index ' + str(prev_idx) + '.')
+            #print('Its index = ' + str(i-1) + ', appending ' + str(i-prev_idx) + ' to list.')
+
+        number_occur_dict[prev_pair[0]] = prev_pair[1]
+
+        i += 1
+
+        prev_pair = [prev_pair[2], i - 1, 0]
+
+        if i % 1000000 == 0:
+            print('Index (MM): ' + str(i/1000000) + ', Dict Len: ' + str(len(number_occur_dict)))
+
+    return prev_pair
+
+
+def Day16_TicketTranslation():
+    filepath = "C:\\Users\\User\\PycharmProjects\\Advent of Code 2020\\Day16_Input.txt"
+    file = open(filepath, 'r')
+    batch_rules_tickets_raw = file.readlines()
+
+    rules = []
+    my_ticket = []
+    nearby_tickets = []
+
+    # For part 1
+    allowed_vals = set()
+
+    # Initialize and keep track of possible rules slots for part 2
+    rule_len = 0
+    for i, line in enumerate(batch_rules_tickets_raw):
+        if line.strip() == '':
+            rule_len = i
+            break
+
+    my_ticket_next = False
+    nearby_tickets_next = False
+
+    for line in batch_rules_tickets_raw:
+        rule_tokens = line.strip().split(' ')
+
+        if not my_ticket_next and not nearby_tickets_next and len(rule_tokens) >= 3:
+            rule_name = rule_tokens[:-3]
+
+            range1 = rule_tokens[-3]
+            range2 = rule_tokens[-1]
+            r1_list = [int(val) for val in range1.split('-')]
+            r2_list = [int(val) for val in range2.split('-')]
+
+            allowed_indices = [i for i in range(0, rule_len)]
+
+            rule = [rule_name, allowed_indices, r1_list, r2_list]
+            rules.append(rule)
+
+            for i in range(r1_list[0], r1_list[1] + 1):
+                allowed_vals.add(i)
+
+            for i in range(r2_list[0], r2_list[1] + 1):
+                allowed_vals.add(i)
+
+            continue
+
+        # Flags to separate loop to build 3 separate lists
+        if 'your ticket:' in line:
+            my_ticket_next = True
+            continue
+        elif 'nearby tickets:' in line:
+            nearby_tickets_next = True
+            continue
+
+        # Save my_ticket
+        if my_ticket_next and not nearby_tickets_next and line.strip() != '':
+            my_ticket = [int(val) for val in line.strip().split(',')]
+
+        # save nearby_tickets
+        elif nearby_tickets_next:
+            ticket = [int(val) for val in line.strip().split(',')]
+            nearby_tickets.append(ticket)
+
+    error_rate = 0
+    valid_nearby_tickets = []
+
+    # Calculate error rate and keep only valid tickets
+    for ticket in nearby_tickets:
+        valid = True
+        for val in ticket:
+            if val not in allowed_vals:
+                error_rate += val
+                valid = False
+        if valid:
+            valid_nearby_tickets.append(ticket)
+
+    yield error_rate
+
+    # Remove possible rule indexes based on range of values for each slot in each nearby tickets
+    # rule = [rule_name, allowed_indices, r1_list, r2_list]
+    for ticket in valid_nearby_tickets:
+        for i, val in enumerate(ticket):
+            for j, rule in enumerate(rules):
+                if i in rule[1] and not (rule[2][0] <= val <= rule[2][1] or rule[3][0] <= val <= rule[3][1]):
+                    rule[1].remove(i)
+
+    print(rules)
+
+    # Now use discovered rule indices to rule out possible indices for other rules
+    # 1. Search for a rule with only 1 possible index.
+    # 2. Remove this index from all other rules' possible index list
+    # 3. If any rules have more than 1 possible index, reapeat from 1.
+    rule_indices_found = []
+    loop_counter = 0
+
+    # rule = [rule_name, allowed_indices, r1_list, r2_list]
+    while len(rule_indices_found) != len(rules) and loop_counter < 100000:
+        # 1. Look for rules with only 1 possible index.
+        for rule in rules:
+            if len(rule[1]) == 1:
+                if rule[1][0] not in rule_indices_found:
+                    rule_indices_found.append(rule[1][0])
+
+        # 2. Remove this index from all other rules possible index list
+        for rule_idx in rule_indices_found:
+            for rule in rules:
+                if len(rule[1]) > 1 and rule_idx in rule[1]:
+                    rule[1].remove(rule_idx)
+
+        loop_counter += 1
+
+    # Return product of departure field values on my ticket
+    product = 1
+
+    for rule in rules:
+        if 'departure' in rule[0]:
+            i = int(rule[1][0])
+            product *= my_ticket[i]
+
+    yield product
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -740,5 +907,10 @@ if __name__ == '__main__':
         print('Day 13 Part 1: ' + str(Day13_ShuttleSearch()))
         print('Day 13 Part 2: ' + str(Day13_ShuttleSearch_2()))
         print('Day 14 Part 1: ' + str(Day14_DockingData()))
+        print('Day 14 Part 2: ' + str(Day14_DockingData_2()))
+        print('Day 15 Part 1: ' + str(Day15_RambunctiousRecitation(2020)))
+        print('Day 15 Part 2: ' + str(Day15_RambunctiousRecitation(30000000)))
 
-    print('Day 14 Part 2: ' + str(Day14_DockingData_2()))
+    gen = Day16_TicketTranslation()
+    print('Day 16 Part 1: ' + str(next(gen)))
+    print('Day 16 Part 2: ' + str(next(gen)))
